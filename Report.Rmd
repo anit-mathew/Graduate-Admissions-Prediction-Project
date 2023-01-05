@@ -1,0 +1,130 @@
+---
+title: "College Acceptance"
+author: "Anit Mathew & Ritwik Katiyar"
+date: "2022-12-15"
+output:
+  pdf_document: default
+  pdf: default
+subtitle: Analysis & Predictions
+documentclass: report
+---
+
+## Introduction
+
+Predicting student admission in a masters degree program is a challenging task due to the diverse backgrounds of the students, and an incomplete understanding of the precise skills that are most critical to success. In this study, the chance of a student admission is assessed using information from the admission application, such as standardized test scores, undergraduate grade point average, Statement of purpose rankings, research paper ranking. etc. Simple data analysis methods, data visualization and machine learning algorithms techniques are used to gain a better understanding of how these variables impact the chance of admission. 
+
+The dataset contains several parameters which are considered important during the application for Masters Programs.
+The parameters included are :
+GRE Scores ( out of 340 )
+TOEFL Scores ( out of 120 )
+University Rating ( out of 5 )
+Statement of Purpose and Letter of Recommendation Strength ( out of 5 )
+Undergraduate GPA ( out of 10 )
+Research Experience ( either 0 or 1 )
+Chance of Admit ( ranging from 0 to 1 )
+
+```{r, echo=FALSE}
+data <- read.csv("Admission_Predict.csv")
+head(data)
+```
+
+The queries that we would be researching are as follows: 
+
+1. How strong the features are correlated among themselves. 
+2. Is there any relationship between the predictive and target variables? 
+3. Which factor is the most important in predicting the chance of admission? 
+
+
+
+## Methedology & Results
+
+Methodology
+
+The data was collected by Mohan S Acharya, Asfia Armaan, Aneeta S Antony and was downloaded from Kaggle. 
+
+Link: https://www.kaggle.com/datasets/mohansacharya/graduate-admissions 
+
+1. Data Cleaning: The data contained almost 400 records. Data will be cleaned by checking for null values and dropping the Serial No. column as it is irrelevant. 
+2. Then, we will be checking the distribution of all variables(Chance of admit, SOP, LOR, CGPA, etc.). 
+3. We will be checking the correlation between the variables to check a mutual relationship. 
+4. Then, ------------------------ test. 
+5. Moving forward, we will be running Machine Learning model to check the strength between predictor variables and target variables(chance of admit)
+6. Along with that we will be conducting Random Forest Regression to check the importance of predictor variables. 
+
+
+
+```{r, warning=FALSE}
+library(reshape2)
+library(ggplot2)
+################## Histogram #####################
+hist(data$Chance.of.Admit, main = 'Distribution of Admission', xlab = 'Chance of Admit', ylab='Count')
+hist(data$GRE.Score, main = 'Distribution of GRE SCORE', xlab = 'GRE SCORE', ylab = 'Frequency')
+hist(data$TOEFL.Score, main = 'Distribution of TOEFL SCORE', ylab = 'FREQUENCY')
+hist(data$SOP)
+hist(data$SOP, main = 'Distribution of SOP', xlab = 'SOP', ylab = 'FREQUENCY')
+hist(data$CGPA, main = 'Distribution of CGPA', xlab = 'CGPA', ylab = 'FREQUENCY') 
+```
+```{r}
+################### Correlation matrix ###################
+# Remove serial no column
+data <- data[,!names(data) %in% c("Serial.No.")]
+# Round the data to two decimal places
+cor_data <- round(cor(data),2)
+# get correlation data
+melted_cor_data <- melt(cor_data)
+# Plot the correlations using gg-plot
+p = ggplot(data = melted_cor_data, aes(x=Var1, y=Var2, fill=value)) + geom_tile()
+p + labs(title = "Corelation matrix between variables")
+```
+
+```{r}
+#################### Normal distribution #################
+# plot the data to check normal distribution
+qqnorm(data$Chance.of.Admit)
+qqline(data$Chance.of.Admit, col = 2)
+
+```
+
+```{r}
+################### Machine Learning ######################
+# Running Linear Regression 
+lm.single <- lm(data$Chance.of.Admit ~ data$GRE.Score + data$TOEFL.Score + data$University.Rating + data$SOP + data$LOR + data$CGPA + data$Research)
+summary(lm.single)
+```
+
+```{r}
+################# Decision Tree  ###################
+tree <- rpart(data$Chance.of.Admit ~ data$GRE.Score + data$TOEFL.Score + data$University.Rating + data$SOP + data$LOR + data$CGPA + data$Research,
+              control=rpart.control(cp=.0001))
+```
+
+
+```{r}
+################### Random Forest #################
+library(randomForest)
+rand_forest <- randomForest(data$Chance.of.Admit ~ data$GRE.Score + data$TOEFL.Score + data$University.Rating + data$SOP + data$LOR + data$CGPA + data$Research, 
+                       data=data)
+rand_forest
+which.min(rand_forest$mse)
+sqrt(rand_forest$mse[which.min(rand_forest$mse)])
+plot(rand_forest)
+varImpPlot(rand_forest)
+```
+
+```{r}
+data_test <- data[,-1]
+model_tuned <- tuneRF(
+               x=data_test[,-8],
+               y=data$Chance.of.Admit,
+               ntreeTry=1000,
+               mtryStart=4, 
+               stepFactor=1.5,
+               improve=0.01,
+               trace=FALSE)
+```
+
+
+## Discussion
+
+
+## Appendix
