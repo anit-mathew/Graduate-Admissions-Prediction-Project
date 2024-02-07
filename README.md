@@ -15,7 +15,7 @@ Welcome to the GitHub repository for the Graduate Admissions Prediction project!
 - **Correlation Analysis:** Using a correlation matrix to evaluate feature relationships.
 - **Machine Learning Models:** Implementing Random Forest Regression and Multiple Linear Regression.
 
-#Results:
+# Results:
 - **Data Validation:** Ensuring data integrity and normality for key variables.
 - **Predictive Models:** Assessing the performance of Random Forest Regression and Multiple Linear Regression.
 
